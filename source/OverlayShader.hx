@@ -1,6 +1,8 @@
 package;
 
 import flixel.system.FlxAssets.FlxShader;
+import flash.display.Bitmap;
+import flash.display.BitmapData;
 
 class OverlayShader extends FlxShader
 {
@@ -29,5 +31,9 @@ class OverlayShader extends FlxShader
 	public function new()
 	{
 		super();
+	}
+
+	public function setBitmapOverlay(overlayImage:BitmapData)
+	{
 	}
 }
