@@ -527,7 +527,7 @@ class DialogueBoxPsych extends FlxSpriteGroup
 	}
 
 	public static function parseDialogue(path:String):DialogueFile {
-		#if windows
+		#if MODS_ALLOWED
 		if(FileSystem.exists(path))
 		{
 			return cast Json.parse(File.getContent(path));
