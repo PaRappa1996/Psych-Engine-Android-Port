@@ -33,7 +33,7 @@ otherwise, you can delete the "VIDEOS_ALLOWED" Line on Project.xml
 * Smokey - Sprite Atlas Support
 * Nebula the Zorua - LUA JIT Fork and some Lua reworks
 
-###Android Port Credits
+Android Port Credits
 * DxGamer - Original port code
 * RenTheSylvee - Videos And Another Things
 _____________________________________
