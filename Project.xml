@@ -204,7 +204,6 @@
 	<config:android permission="android.permission.INTERNET" />
 
 	<!--Android Gradle-->
-	<android target-sdk-version="29" />
 	<config:android gradle-version="7.6" />
 	<config:android gradle-plugin="7.3.1" />
 
