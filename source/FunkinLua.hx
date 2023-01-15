@@ -488,7 +488,7 @@ class FunkinLua {
 		Lua_helper.add_callback(lua, "callOnLuas", function(?funcName:String, ?args:Array<Dynamic>, ignoreStops=false, ignoreSelf=true, ?exclusions:Array<String>){
 			if(funcName==null){
 				#if (linc_luajit >= "0.0.6")
-				LuaL.error(lua, "bad argument #1 to 'callOnLuas' (string expected, got nil)");
+				/*LuaL.error(lua, "bad argument #1 to 'callOnLuas' (string expected, got nil)");*/
 				#end
 				return;
 			}
@@ -506,13 +506,13 @@ class FunkinLua {
 		Lua_helper.add_callback(lua, "callScript", function(?luaFile:String, ?funcName:String, ?args:Array<Dynamic>){
 			if(luaFile==null){
 				#if (linc_luajit >= "0.0.6")
-				LuaL.error(lua, "bad argument #1 to 'callScript' (string expected, got nil)");
+				/*LuaL.error(lua, "bad argument #1 to 'callScript' (string expected, got nil)");*/
 				#end
 				return;
 			}
 			if(funcName==null){
 				#if (linc_luajit >= "0.0.6")
-				LuaL.error(lua, "bad argument #2 to 'callScript' (string expected, got nil)");
+				/*LuaL.error(lua, "bad argument #2 to 'callScript' (string expected, got nil)");*/
 				#end
 				return;
 			}
@@ -564,13 +564,13 @@ class FunkinLua {
 		Lua_helper.add_callback(lua, "getGlobalFromScript", function(?luaFile:String, ?global:String){ // returns the global from a script
 			if(luaFile==null){
 				#if (linc_luajit >= "0.0.6")
-				LuaL.error(lua, "bad argument #1 to 'getGlobalFromScript' (string expected, got nil)");
+				/*LuaL.error(lua, "bad argument #1 to 'getGlobalFromScript' (string expected, got nil)");*/
 				#end
 				return;
 			}
 			if(global==null){
 				#if (linc_luajit >= "0.0.6")
-				LuaL.error(lua, "bad argument #2 to 'getGlobalFromScript' (string expected, got nil)");
+				/*LuaL.error(lua, "bad argument #2 to 'getGlobalFromScript' (string expected, got nil)");*/
 				#end
 				return;
 			}
@@ -610,7 +610,7 @@ class FunkinLua {
 							Lua.pushnumber(lua, Lua.tonumber(luaInstance.lua, -1));
 						}else if(Lua.isstring(luaInstance.lua,-1)){
 							Lua.pushstring(lua, Lua.tostring(luaInstance.lua, -1));
-						}else if(Lua.isboolean(luaInstance.lua,-1)){
+						}else if(Lua.isnumber(luaInstance.lua,-1)){
 							Lua.pushboolean(lua, Lua.toboolean(luaInstance.lua, -1));
 						}else{
 							Lua.pushnil(lua);
