@@ -1,135 +1,110 @@
 package openfl.display;
 
-#if android
-import android.os.Build.VERSION;
-#end
-import openfl.Lib;
+import haxe.Timer;
 import openfl.events.Event;
-import openfl.system.System;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
+import flixel.math.FlxMath;
+#if gl_stats
+import openfl.display._internal.stats.Context3DStats;
+import openfl.display._internal.stats.DrawCallContext;
+#end
+#if flash
+import openfl.Lib;
+#end
 
-enum GLInfo
-{
-	RENDERER;
-	SHADING_LANGUAGE_VERSION;
-}
+#if openfl
+import openfl.system.System;
+#end
 
+/**
+	The FPS class provides an easy-to-use monitor to display
+	the current frame rate of an OpenFL project
+**/
+#if !openfl_debug
+@:fileXml('tags="haxe,release"')
+@:noDebug
+#end
 class FPS extends TextField
 {
+	/**
+		The current frame rate, expressed using frames-per-second
+	**/
+	public var currentFPS(default, null):Int;
+
+	@:noCompletion private var cacheCount:Int;
 	@:noCompletion private var currentTime:Float;
-	@:noCompletion private var currentMemoryPeak:UInt;
 	@:noCompletion private var times:Array<Float>;
 
-	public function new(x:Float = 10, y:Float = 10, size_x:Int = 1, size_y:Int = 1, size:Int = 15)
+	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000)
 	{
 		super();
 
 		this.x = x;
-		this.y = x;
+		this.y = y;
 
-		autoSize = LEFT;
+		currentFPS = 0;
 		selectable = false;
 		mouseEnabled = false;
+		defaultTextFormat = new TextFormat("_sans", 14, color);
+		autoSize = LEFT;
+		multiline = true;
+		text = "FPS: ";
 
-		defaultTextFormat = new TextFormat('_sans', Std.int(size * Math.min(Lib.current.stage.stageWidth / size_x, Lib.current.stage.stageHeight / size_y)),
-			0xFFFFFF);
-
+		cacheCount = 0;
 		currentTime = 0;
-		currentMemoryPeak = 0;
 		times = [];
 
-		addEventListener(Event.ENTER_FRAME, function(e:Event)
+		#if flash
+		addEventListener(Event.ENTER_FRAME, function(e)
 		{
-			var time:Int = Lib.getTimer();
-			onEnterFrame(time - currentTime);
+			var time = Lib.getTimer();
+			__enterFrame(time - currentTime);
 		});
-		addEventListener(Event.RESIZE, function(e:Event)
-		{
-			final daSize:Int = Std.int(size * Math.min(Lib.current.stage.stageWidth / size_x, Lib.current.stage.stageHeight / size_y));
-			if (defaultTextFormat.size != daSize)
-				defaultTextFormat.size = daSize;
-		});
+		#end
 	}
 
-	private function onEnterFrame(deltaTime:Float):Void
+	// Event Handlers
+	@:noCompletion
+	private #if !flash override #end function __enterFrame(deltaTime:Float):Void
 	{
 		currentTime += deltaTime;
 		times.push(currentTime);
 
 		while (times[0] < currentTime - 1000)
+		{
 			times.shift();
+		}
 
-		var currentFrames:Int = times.length;
-		if (currentFrames > Std.int(Lib.current.stage.frameRate))
-			currentFrames = Std.int(Lib.current.stage.frameRate);
+		var currentCount = times.length;
+		currentFPS = Math.round((currentCount + cacheCount) / 2);
+		if (currentFPS > ClientPrefs.framerate) currentFPS = ClientPrefs.framerate;
 
-		if (currentFrames <= Std.int(Lib.current.stage.frameRate) / 4)
-			textColor = 0xFFFF0000;
-		else if (currentFrames <= Std.int(Lib.current.stage.frameRate) / 2)
-			textColor = 0xFFFFFF00;
-		else
-			textColor = 0xFFFFFFFF;
-
-		var currentMemory:UInt = System.totalMemory;
-		if (currentMemory > currentMemoryPeak)
-			currentMemoryPeak = currentMemory;
-
-		if (visible || alpha > 0)
+		if (currentCount != cacheCount /*&& visible*/)
 		{
-			var stats:Array<String> = [];
-			stats.push('FPS: ${currentFrames}');
-			stats.push('Memory: ${getMemorySize(currentMemory)} / ${getMemorySize(currentMemoryPeak)}');
-			stats.push('GL Renderer: ${getGLInfo(RENDERER)}');
-			stats.push('GL Shading Version: ${getGLInfo(SHADING_LANGUAGE_VERSION)}');
-			#if android
-			stats.push('System: Android ${VERSION.RELEASE} (API ${VERSION.SDK_INT})');
-			#elseif mac
-			stats.push('System: ${lime.system.System.platformLabel}');
-			#else
-			stats.push('System: ${lime.system.System.platformLabel} ${lime.system.System.platformVersion}');
+			text = "FPS: " + currentFPS;
+			var memoryMegas:Float = 0;
+			
+			#if openfl
+			memoryMegas = Math.abs(FlxMath.roundDecimal(System.totalMemory / 1000000, 1));
+			text += "\nMemory: " + memoryMegas + " MB";
 			#end
-			stats.push(''); // adding this to not hide the last line.
-			text = stats.join('\n');
-		}
-	}
 
-	public static function getMemorySize(memory:UInt):String
-	{
-		var size:Float = memory;
-		var label:Int = 0;
-		var labels:Array<String> = ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+			textColor = 0xFFFFFFFF;
+			if (memoryMegas > 3000 || currentFPS <= ClientPrefs.framerate / 2)
+			{
+				textColor = 0xFFFF0000;
+			}
 
-		while (size >= 1000 && (label < labels.length - 1))
-		{
-			label++;
-			size /= 1000;
-		}
+			#if (gl_stats && !disable_cffi && (!html5 || !canvas))
+			text += "\ntotalDC: " + Context3DStats.totalDrawCalls();
+			text += "\nstageDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE);
+			text += "\nstage3DDC: " + Context3DStats.contextDrawCalls(DrawCallContext.STAGE3D);
+			#end
 
-		return '${Std.int(size) + "." + addZeros(Std.string(Std.int((size % 1) * 100)), 2)}${labels[label]}';
-	}
-
-	public static inline function addZeros(str:String, num:Int)
-	{
-		while (str.length < num)
-			str = '0${str}';
-
-		return str;
-	}
-
-	private function getGLInfo(info:GLInfo):String
-	{
-		@:privateAccess
-		var gl:Dynamic = Lib.current.stage.context3D.gl;
-
-		switch (info)
-		{
-			case RENDERER:
-				return Std.string(gl.getParameter(gl.RENDERER));
-			case SHADING_LANGUAGE_VERSION:
-				return Std.string(gl.getParameter(gl.SHADING_LANGUAGE_VERSION));
+			text += "\n";
 		}
 
-		return '';
+		cacheCount = currentCount;
 	}
 }
