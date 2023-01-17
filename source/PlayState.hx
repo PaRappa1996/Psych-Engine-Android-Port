@@ -74,6 +74,10 @@ import sys.FileSystem;
 import sys.io.File;
 #end
 
+#if VIDEOS_ALLOWED
+import hxcodec.VideoHandler
+#end	
+	
 using StringTools;
 
 class PlayState extends MusicBeatState
@@ -1742,7 +1746,7 @@ public function addShaderToCamera(cam:String,effect:Dynamic){//STOLE FROM ANDROM
 			return;
 		}
 
-
+		var video:VideoHandler = new VideoHandler();
 		video.playVideo(filepath);
 		video.finishCallback = function()
 		{
