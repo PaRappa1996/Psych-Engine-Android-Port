@@ -75,7 +75,7 @@ import sys.io.File;
 #end
 
 #if VIDEOS_ALLOWED
-import vlc.MP4Handler;
+import VideoHandler;
 #end
 
 using StringTools;
@@ -1746,7 +1746,7 @@ public function addShaderToCamera(cam:String,effect:Dynamic){//STOLE FROM ANDROM
 			return;
 		}
 
-		var video:MP4Handler = new MP4Handler();
+		var video:VideoHandler = new VideoHandler();
 		video.playVideo(filepath);
 		video.finishCallback = function()
 		{
